@@ -4,12 +4,12 @@ A lightning-fast, cross-platform recursive file search and content matching tool
 
 ## Features
 
-- 🚀 **Blazing fast** - Built on Rust's `walkdir`, `regex`, and `globset` crates
-- 🖥️ **Cross-platform** - Works on Windows, Linux, and macOS
-- 🔍 **Content search** - Regex patterns, literal strings, word boundaries, invert matching
-- 📁 **File filtering** - Extension, glob, file type, size, modification time, and more
-- 🎨 **Beautiful output** - Colored matches, context lines, JSON format for tooling
-- 📋 **Compatible flags** - Familiar grep/ripgrep-style CLI interface
+- **Blazing fast** - Built on Rust's `walkdir`, `regex`, and `globset` crates
+- **Cross-platform** - Works on Windows, Linux, and macOS
+- **Content search** - Regex patterns, literal strings, word boundaries, invert matching
+- **File filtering** - Extension, glob, file type, size, modification time, and more
+- **Beautiful output** - Colored matches, context lines (with merged overlapping ranges), heading mode, JSON format
+- **Compatible flags** - Familiar grep/ripgrep-style CLI interface
 
 ## Quick Start
 
@@ -53,7 +53,7 @@ rsdata [OPTIONS] [DIRECTORY]
 
 | Flag | Description |
 |------|-------------|
-| `--pattern <PATTERN>` | Content pattern to search for |
+| `-p, --pattern <PATTERN>` | Content pattern to search for |
 | `-e, --regexp <PATTERNS>` | Additional patterns (OR logic; use multiple times) |
 | `-f, --file <PATH>` | Read patterns from file, one per line |
 | `-F, --fixed-strings` | Treat pattern as literal string (not regex) |
@@ -63,6 +63,8 @@ rsdata [OPTIONS] [DIRECTORY]
 | `-s, --case-sensitive` | Case-sensitive search |
 | `-i, --ignore-case` | Case-insensitive search |
 | `-S, --smart-case` | Case-insensitive unless pattern contains uppercase |
+
+> **Note:** The default mode is smart-case. Pass `-s` for strict case-sensitive or `-i` for fully case-insensitive.
 
 ### File Filtering
 
@@ -97,7 +99,7 @@ rsdata [OPTIONS] [DIRECTORY]
 | `-o, --only-matching` | Show only matched text, not full lines |
 | `-H, --with-filename` | Always prefix with filename |
 | `--no-filename` | Never prefix with filename |
-| `--heading` | Group matches under file headings |
+| `--heading` | Group matches under file headings with underline |
 | `--passthru` | Print ALL lines, highlighting matches |
 | `-a, --text` | Treat binary files as text |
 | `--json` | JSON output (for scripts/editor integration) |
@@ -107,7 +109,9 @@ rsdata [OPTIONS] [DIRECTORY]
 | `--absolute-path` | Show absolute paths |
 | `--files` | Only list files, don't search content |
 | `-m, --max-count <N>` | Stop after N matches per file |
-| `--color <when>` | Color mode: `auto`, `always`, `never` |
+| `--color <when>` | Color mode: `auto` (default), `always`, `never` |
+
+> **Context lines:** When matches are close together, overlapping context ranges are automatically merged into a single block. Non-overlapping blocks are separated by `--`.
 
 ## Examples
 
@@ -124,7 +128,7 @@ rsdata -e "unwrap()" -e "expect(" -t rs .
 rsdata -p "unsafe" -v --files-without-match -t rs .
 
 # Word boundaries only
-rsdata -p "result" -w -i .
+rsdata -p "result" -w .
 ```
 
 ### File Filtering
@@ -150,7 +154,7 @@ rsdata --files --changed-before 1week .
 ### Context & Output
 
 ```bash
-# Show 2 lines before and after
+# Show 2 lines before and after (merged if overlapping)
 rsdata -p "fn main" -C 2 .
 
 # Just filenames (for scripting)
@@ -161,6 +165,9 @@ rsdata -p "struct" --json -t rs src/
 
 # Stats
 rsdata -p "let" --stats -t rs .
+
+# Disable colors (pipe-safe)
+rsdata -p "error" --color never .
 ```
 
 ## Cross-Platform Compilation
@@ -175,7 +182,7 @@ cargo build --release --target x86_64-pc-windows-gnu
 cargo build --release --target x86_64-apple-darwin
 ```
 
-Or build natively on each platform - the code is 100% cross-platform.
+Or build natively on each platform.
 
 ## License
 
@@ -184,7 +191,3 @@ GNU General Public License v3.0
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a PR.
-
----
-
-Built with Rust 🦀
